@@ -1,7 +1,12 @@
 import OpenAI from "openai";
 import type { JDAnalysisResult, ExtractedKeyword } from "./types";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const getOpenAIClient = () => {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OpenAI API key not configured");
+  }
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+};
 
 const SYSTEM_PROMPT = `You are an expert ATS (Applicant Tracking System) analyst and recruiter.
 Your job is to analyze job descriptions and extract the most important keywords,
@@ -10,6 +15,7 @@ skills, and qualifications that ATS systems and recruiters look for.
 Always respond with valid JSON only — no markdown, no explanation.`;
 
 export async function analyzeJobDescription(jd: string): Promise<JDAnalysisResult> {
+  const openai = getOpenAIClient();
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     max_tokens: 1500,

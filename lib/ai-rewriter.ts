@@ -1,7 +1,12 @@
 import OpenAI from "openai";
 import type { RewriteRequest, RewriteResponse, ATSScoreResult, ResumeData } from "./types";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const getOpenAIClient = () => {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OpenAI API key not configured");
+  }
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+};
 
 const REWRITE_SYSTEM = `You are an expert resume writer specializing in ATS optimization.
 Your goal: rewrite resume bullet points to sound authoritative, use strong action verbs,
@@ -12,6 +17,7 @@ Return JSON only.`;
 export async function rewriteBullet(req: RewriteRequest): Promise<RewriteResponse> {
   const { bullet, targetKeywords, jobTitle } = req;
 
+  const openai = getOpenAIClient();
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     max_tokens: 300,
